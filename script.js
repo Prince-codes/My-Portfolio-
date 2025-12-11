@@ -6,13 +6,16 @@ function raf(time) {
 }
 requestAnimationFrame(raf);
 
+// Detect if mobile
+const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
 // --- 2. DOCK ANIMATION (Mimicking React Dock) ---
 const dock = document.getElementById('dock');
 const dockItems = document.querySelectorAll('.dock-item');
 const baseWidth = 50;
 const root = document.documentElement;
 
-if (dock) {
+if (dock && !isMobile) {
     dock.addEventListener('mousemove', (e) => {
         const mouseX = e.clientX;
         
@@ -40,8 +43,10 @@ if (dock) {
             item.style.fontSize = `1.2rem`;
         });
     });
+}
 
-    // Handle Dock Active State on Scroll/Click
+// Handle Dock Active State on Scroll/Click
+if (dock) {
     window.addEventListener('scroll', () => {
         const currentScrollY = window.scrollY + window.innerHeight / 2;
         document.querySelectorAll('section').forEach(section => {
@@ -85,11 +90,10 @@ function initAnime() {
             opacity: [0,1],
             easing: "easeOutExpo",
             duration: 1200,
-            delay: anime.stagger(30)
-        }, 0); // Start title animation at the same time as subtitle for smooth feel
+            delay: anime.stagger(isMobile ? 15 : 30)
+        }, 0);
 
-
-    // Scroll Trigger for Section headers
+    // Scroll Trigger for Section headers - reduced stagger on mobile
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if(entry.isIntersecting) {
@@ -98,8 +102,8 @@ function initAnime() {
                     translateY: [50, 0],
                     opacity: [0,1],
                     easing: "easeOutExpo",
-                    duration: 800,
-                    delay: anime.stagger(20)
+                    duration: isMobile ? 600 : 800,
+                    delay: anime.stagger(isMobile ? 10 : 20)
                 });
                 observer.unobserve(entry.target);
             }
@@ -124,9 +128,11 @@ setTimeout(type, 1500); // Wait for hero animation to start
 
 // --- 5. CLICK SPARK ---
 document.addEventListener('click', (e) => {
+    // Reduce spark particles on mobile for better performance
+    const sparkCount = isMobile ? 4 : 8;
     const neonBlue = root.style.getPropertyValue('--neon-blue') || '#7BBBFF';
 
-    for(let i=0; i<8; i++) {
+    for(let i=0; i<sparkCount; i++) {
         const spark = document.createElement('div');
         spark.classList.add('spark');
         document.body.appendChild(spark);
@@ -248,7 +254,9 @@ class Ball {
 function initBalls() {
     balls = [];
     const colors = ['#253745', '#4A5C6A', '#11212D'];
-    for (let i = 0; i < 60; i++) {
+    // Reduce ball count on mobile for better performance
+    const ballCount = isMobile ? 30 : 60;
+    for (let i = 0; i < ballCount; i++) {
         let r = Math.random() * 15 + 5;
         let x = Math.random() * canvas.width;
         let y = Math.random() * canvas.height;
